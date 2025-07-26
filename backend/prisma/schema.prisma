@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  password   String
+  name       String
+  courses    Course[]
+  timetables Timetable[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("users")
+}
+
+model Course {
+  id         Int       @id @default(autoincrement())
+  courseCode String    @map("course_code")
+  courseName String    @map("course_name")
+  faculty    User      @relation(fields: [facultyId], references: [id])
+  facultyId  Int       @map("faculty_id")
+  students   Student[]
+  timetable  Timetable[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([facultyId])
+  @@map("courses")
+}
+
+model Student {
+  id         Int       @id @default(autoincrement())
+  studentId  String    @unique @map("student_id")
+  name       String
+  email      String?
+  course     Course    @relation(fields: [courseId], references: [id])
+  courseId   Int       @map("course_id")
+  attendance Attendance[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([courseId])
+  @@map("students")
+}
+
+model Timetable {
+  id         Int       @id @default(autoincrement())
+  faculty    User      @relation(fields: [facultyId], references: [id])
+  course     Course    @relation(fields: [courseId], references: [id])
+  facultyId  Int       @map("faculty_id")
+  courseId   Int       @map("course_id")
+  dayOfWeek  String    @map("day_of_week") @db.VarChar(10)
+  startTime  String    @map("start_time") @db.VarChar(5)
+  endTime    String    @map("end_time") @db.VarChar(5)
+  venue      String?
+  attendance Attendance[]
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([facultyId])
+  @@index([courseId])
+  @@map("timetable")
+}
+
+model Attendance {
+  id          Int       @id @default(autoincrement())
+  student     Student   @relation(fields: [studentId], references: [id])
+  timetable   Timetable @relation(fields: [timetableId], references: [id])
+  studentId   Int       @map("student_id")
+  timetableId Int       @map("timetable_id")
+  date        DateTime
+  status      String    @default("present")
+  markedAt    DateTime  @default(now()) @map("marked_at")
+
+  @@unique([studentId, timetableId, date])
+  @@index([studentId])
+  @@index([timetableId])
+  @@map("attendance")
+}
