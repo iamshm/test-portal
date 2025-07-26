@@ -22,7 +22,7 @@ export class CourseController extends BaseController {
         studentCount: course._count.students,
       }));
 
-      res.json(coursesWithCount);
+      res.json({ courses: coursesWithCount });
     } catch (error) {
       next(error);
     }
@@ -45,8 +45,10 @@ export class CourseController extends BaseController {
       }
 
       res.json({
-        ...course,
-        studentCount: course._count.students,
+        course: {
+          ...course,
+          studentCount: course._count.students,
+        }
       });
     } catch (error) {
       next(error);
@@ -72,8 +74,10 @@ export class CourseController extends BaseController {
       });
 
       res.status(201).json({
-        ...course,
-        studentCount: course._count.students,
+        course: {
+          ...course,
+          studentCount: course._count.students,
+        }
       });
     } catch (error) {
       next(error);
@@ -100,8 +104,10 @@ export class CourseController extends BaseController {
       });
 
       res.json({
-        ...course,
-        studentCount: course._count.students,
+        course: {
+          ...course,
+          studentCount: course._count.students,
+        }
       });
     } catch (error) {
       next(error);

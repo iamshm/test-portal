@@ -1,4 +1,3 @@
-import axios from "axios";
 import type {
   Student,
   StudentWithCourse,
@@ -6,43 +5,37 @@ import type {
   UpdateStudentData,
   StudentAttendance,
 } from "../types/student";
-
-const API_URL = "http://localhost:3000/api";
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-});
+import { apiClient } from "./client";
 
 export const studentApi = {
   getAllStudents: async (): Promise<StudentWithCourse[]> => {
-    const response = await api.get<{ students: StudentWithCourse[] }>(
+    const response = await apiClient.get<{ students: StudentWithCourse[] }>(
       "/students"
     );
     return response.data.students;
   },
 
   getStudentsByCourse: async (courseId: number): Promise<Student[]> => {
-    const response = await api.get<{ students: Student[] }>(
+    const response = await apiClient.get<{ students: Student[] }>(
       `/courses/${courseId}/students`
     );
     return response.data.students;
   },
 
   getStudentById: async (id: number): Promise<StudentWithCourse> => {
-    const response = await api.get<{ student: StudentWithCourse }>(
+    const response = await apiClient.get<{ student: StudentWithCourse }>(
       `/students/${id}`
     );
     return response.data.student;
   },
 
   createStudent: async (data: CreateStudentData): Promise<Student> => {
-    const response = await api.post<{ student: Student }>("/students", data);
+    const response = await apiClient.post<{ student: Student }>("/students", data);
     return response.data.student;
   },
 
   updateStudent: async (data: UpdateStudentData): Promise<Student> => {
-    const response = await api.put<{ student: Student }>(
+    const response = await apiClient.put<{ student: Student }>(
       `/students/${data.id}`,
       data
     );
@@ -50,7 +43,7 @@ export const studentApi = {
   },
 
   deleteStudent: async (id: number): Promise<void> => {
-    await api.delete(`/students/${id}`);
+    await apiClient.delete(`/students/${id}`);
   },
 
   getStudentAttendance: async (
@@ -62,7 +55,7 @@ export const studentApi = {
     if (startDate) params.append("startDate", startDate);
     if (endDate) params.append("endDate", endDate);
 
-    const response = await api.get<{ attendance: StudentAttendance[] }>(
+    const response = await apiClient.get<{ attendance: StudentAttendance[] }>(
       `/students/${studentId}/attendance`,
       { params }
     );

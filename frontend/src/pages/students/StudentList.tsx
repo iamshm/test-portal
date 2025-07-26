@@ -1,42 +1,59 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
-
-interface Student {
-  id: number;
-  studentId: string;
-  name: string;
-  email: string | null;
-  course: {
-    courseCode: string;
-    courseName: string;
-  };
-}
+import { studentApi } from "../../api/students";
+import { courseApi } from "../../api/courses";
+import type { StudentWithCourse, CreateStudentData } from "../../types/student";
+import type { CourseWithStudentCount } from "../../types/course";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
+import { ErrorMessage } from "../../components/common/ErrorMessage";
 
 export const StudentList = () => {
   const { courseId } = useParams();
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<StudentWithCourse[]>([]);
+  const [courses, setCourses] = useState<CourseWithStudentCount[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [newStudent, setNewStudent] = useState({
+  const [newStudent, setNewStudent] = useState<CreateStudentData>({
     studentId: "",
     name: "",
     email: "",
+    courseId: courseId ? parseInt(courseId) : 0,
   });
 
   useEffect(() => {
     fetchStudents();
+    if (!courseId) {
+      fetchCourses();
+    }
   }, [courseId]);
+
+  const fetchCourses = async () => {
+    try {
+      const coursesData = await courseApi.getAllCourses();
+      setCourses(coursesData);
+    } catch (err) {
+      console.error('Failed to load courses:', err);
+    }
+  };
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get(`/api/students/by-course/${courseId}`);
-      setStudents(response.data);
+      
+      let studentsData;
+      if (courseId) {
+        // Fetch students for specific course
+        studentsData = await studentApi.getStudentsByCourse(parseInt(courseId));
+      } else {
+        // Fetch all students
+        studentsData = await studentApi.getAllStudents();
+      }
+      
+      setStudents(studentsData);
     } catch (err) {
       setError("Failed to load students");
-      console.error(err);
+      console.error('Error loading students:', err);
     } finally {
       setLoading(false);
     }
@@ -45,34 +62,36 @@ export const StudentList = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("/api/students", {
-        ...newStudent,
-        courseId: parseInt(courseId!),
+      await studentApi.createStudent(newStudent);
+      setNewStudent({ 
+        studentId: "", 
+        name: "", 
+        email: "",
+        courseId: courseId ? parseInt(courseId) : 0
       });
-      setNewStudent({ studentId: "", name: "", email: "" });
       fetchStudents();
     } catch (err) {
       setError("Failed to add student");
-      console.error(err);
+      console.error('Error creating student:', err);
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
-      await axios.delete(`/api/students/${id}`);
+      await studentApi.deleteStudent(id);
       setStudents(students.filter((student) => student.id !== id));
     } catch (err) {
       setError("Failed to delete student");
-      console.error(err);
+      console.error('Error deleting student:', err);
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <ErrorMessage message={error} />;
   }
 
   return (
@@ -81,6 +100,28 @@ export const StudentList = () => {
 
       {/* Add Student Form */}
       <form onSubmit={handleSubmit} className="mb-8 space-y-4">
+        {!courseId && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Course
+            </label>
+            <select
+              value={newStudent.courseId}
+              onChange={(e) =>
+                setNewStudent({ ...newStudent, courseId: parseInt(e.target.value) })
+              }
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              required
+            >
+              <option value={0}>Select a course</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.courseCode} - {course.courseName}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <div>
           <label className="block text-sm font-medium text-gray-700">
             Student ID
@@ -144,6 +185,11 @@ export const StudentList = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Email
               </th>
+              {!courseId && (
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Course
+                </th>
+              )}
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 Actions
               </th>
@@ -157,6 +203,11 @@ export const StudentList = () => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">{student.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{student.email}</td>
+                {!courseId && student.course && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {student.course.courseCode} - {student.course.courseName}
+                  </td>
+                )}
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => handleDelete(student.id)}

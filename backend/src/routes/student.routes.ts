@@ -8,6 +8,9 @@ const studentController = new StudentController();
 // Protected routes
 router.use(authMiddleware);
 
+// Get all students
+router.get("/", studentController.getAllStudents);
+
 // Get students by course
 router.get("/by-course/:courseId", studentController.getStudentsByCourse);
 

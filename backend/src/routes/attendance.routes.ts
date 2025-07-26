@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AttendanceController } from "../controllers/attendance.controller";
-import { authenticateToken } from "../middleware/auth";
+import { authMiddleware } from "../middleware/auth.middleware";
 import { validate } from "../middleware/validation.middleware";
 import { attendanceSchema } from "../validations/attendance.schema";
 
@@ -8,7 +8,7 @@ const router = Router();
 const attendanceController = new AttendanceController();
 
 // Apply authentication middleware to all routes
-router.use(authenticateToken);
+router.use(authMiddleware);
 
 // Get class attendance
 router.get(

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MapPin, Clock } from "lucide-react";
+import { MapPin } from "lucide-react";
 import axios from "axios";
 
 interface TimetableEntry {
@@ -41,8 +41,15 @@ export const TimetableView = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get("/api/timetable/my-schedule");
-      setTimetable(response.data);
+      const response = await axios.get<TimetableEntry[]>(
+        "/api/timetable/my-schedule"
+      );
+      if (Array.isArray(response.data)) {
+        setTimetable(response.data);
+      } else {
+        setError("Invalid data format received from server");
+        console.error("Expected array but got:", response.data);
+      }
     } catch (err) {
       setError("Failed to load timetable");
       console.error(err);
@@ -70,7 +77,11 @@ export const TimetableView = () => {
   };
 
   const getEntryForSlot = (day: string, timeSlot: string) => {
-    return timetable.find((entry) => {
+    if (!Array.isArray(timetable)) {
+      console.error("Timetable is not an array:", timetable);
+      return undefined;
+    }
+    return timetable.find((entry: TimetableEntry) => {
       return (
         entry.dayOfWeek === day &&
         entry.startTime <= timeSlot &&
@@ -90,18 +101,34 @@ export const TimetableView = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-gray-600">Loading timetable...</div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(timetable)) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="text-red-600">Invalid timetable data</div>
+      </div>
+    );
   }
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Weekly Timetable</h1>
-        <button className="px-4 py-2 bg-indigo-600 text-white rounded">
+        <button className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
           Add Class
         </button>
       </div>

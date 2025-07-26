@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, LogOut, Calendar, Users, Upload } from "lucide-react";
+import {
+  Menu,
+  LogOut,
+  Calendar,
+  Users,
+  Upload,
+  BookOpen,
+  ClipboardCheck,
+  Home,
+  BarChart,
+} from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
 export const DashboardLayout = ({
@@ -19,9 +29,37 @@ export const DashboardLayout = ({
   };
 
   const navigation = [
-    { name: "Timetable", href: "/timetable", icon: Calendar },
-    { name: "Upload Timetable", href: "/upload-timetable", icon: Upload },
-    { name: "Students", href: "/students", icon: Users },
+    { name: "Dashboard", href: "/", icon: Home },
+    {
+      name: "Courses",
+      href: "/courses",
+      icon: BookOpen,
+    },
+    {
+      name: "Students",
+      href: "/students",
+      icon: Users,
+    },
+    {
+      name: "Timetable",
+      href: "/timetable",
+      icon: Calendar,
+    },
+    {
+      name: "Upload Timetable",
+      href: "/timetable/upload",
+      icon: Upload,
+    },
+    {
+      name: "Attendance",
+      href: "/attendance",
+      icon: ClipboardCheck,
+    },
+    {
+      name: "Reports",
+      href: "/attendance/reports",
+      icon: BarChart,
+    },
   ];
 
   return (

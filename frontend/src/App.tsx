@@ -15,38 +15,57 @@ import { StudentList } from "./pages/students/StudentList";
 import { TimetableView } from "./pages/timetable/TimetableView";
 import { AttendanceReports } from "./pages/attendance/AttendanceReports";
 import { UploadTimetable } from "./pages/timetable/UploadTimetable";
+// import { AttendanceMarking } from "./pages/attendance/AttendanceMarking";
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Routes>
+          {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          {/* Protected Routes */}
           <Route
-            path="/"
+            path="/*"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Routes>
+                    {/* Dashboard */}
                     <Route path="/" element={<Dashboard />} />
-                    <Route path="/courses" element={<CourseList />} />
-                    <Route path="/students" element={<StudentList />} />
-                    <Route path="/timetable" element={<TimetableView />} />
-                    <Route path="/attendance" element={<AttendanceReports />} />
+
+                    {/* Courses */}
+                    <Route path="courses" element={<CourseList />} />
+
+                    {/* Students */}
+                    <Route path="students" element={<StudentList />} />
                     <Route
-                      path="/upload-timetable"
+                      path="students/course/:courseId"
+                      element={<StudentList />}
+                    />
+
+                    {/* Timetable */}
+                    <Route path="timetable" element={<TimetableView />} />
+                    <Route
+                      path="timetable/upload"
                       element={<UploadTimetable />}
                     />
+
+                    {/* Attendance */}
+                    {/* <Route path="attendance" element={<AttendanceMarking />} /> */}
                     <Route
-                      path="/students/:courseId"
-                      element={<StudentList />}
+                      path="attendance/reports"
+                      element={<AttendanceReports />}
                     />
                   </Routes>
                 </DashboardLayout>
               </ProtectedRoute>
             }
           />
+
+          {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>

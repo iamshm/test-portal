@@ -4,6 +4,25 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export class StudentController {
+  // Get all students
+  async getAllStudents(req: Request, res: Response, next: NextFunction) {
+    try {
+      const students = await prisma.student.findMany({
+        include: {
+          course: {
+            select: {
+              courseCode: true,
+              courseName: true,
+            },
+          },
+        },
+      });
+      res.json({ students });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // Get students by course
   async getStudentsByCourse(req: Request, res: Response, next: NextFunction) {
     try {
@@ -19,7 +38,7 @@ export class StudentController {
           },
         },
       });
-      res.json(students);
+      res.json({ students });
     } catch (error) {
       next(error);
     }
@@ -65,7 +84,7 @@ export class StudentController {
         },
       });
 
-      res.status(201).json(student);
+      res.status(201).json({ student });
     } catch (error) {
       next(error);
     }
@@ -126,7 +145,7 @@ export class StudentController {
         },
       });
 
-      res.json(student);
+      res.json({ student });
     } catch (error) {
       next(error);
     }

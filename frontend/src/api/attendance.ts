@@ -1,24 +1,17 @@
-import axios from "axios";
 import type {
   AttendanceWithStudent,
   StudentAttendanceSummary,
   ClassAttendanceSummary,
   BulkAttendanceData,
 } from "../types/attendance";
-
-const API_URL = "http://localhost:3000/api";
-
-const api = axios.create({
-  baseURL: API_URL,
-  withCredentials: true,
-});
+import { apiClient } from "./client";
 
 export const attendanceApi = {
   getClassAttendance: async (
     timetableId: number,
     date: string
   ): Promise<AttendanceWithStudent[]> => {
-    const response = await api.get<{ attendance: AttendanceWithStudent[] }>(
+    const response = await apiClient.get<{ attendance: AttendanceWithStudent[] }>(
       `/attendance/class/${timetableId}/${date}`
     );
     return response.data.attendance;
@@ -34,7 +27,7 @@ export const attendanceApi = {
     if (startDate) params.append("startDate", startDate);
     if (endDate) params.append("endDate", endDate);
 
-    const response = await api.get<{ summary: StudentAttendanceSummary }>(
+    const response = await apiClient.get<{ summary: StudentAttendanceSummary }>(
       `/attendance/student/${studentId}/course/${courseId}`,
       { params }
     );
@@ -50,7 +43,7 @@ export const attendanceApi = {
     if (startDate) params.append("startDate", startDate);
     if (endDate) params.append("endDate", endDate);
 
-    const response = await api.get<{ summary: ClassAttendanceSummary[] }>(
+    const response = await apiClient.get<{ summary: ClassAttendanceSummary[] }>(
       `/attendance/course/${courseId}/summary`,
       { params }
     );
@@ -58,17 +51,17 @@ export const attendanceApi = {
   },
 
   markBulkAttendance: async (data: BulkAttendanceData): Promise<void> => {
-    await api.post("/attendance/mark-bulk", data);
+    await apiClient.post("/attendance/mark-bulk", data);
   },
 
   updateAttendance: async (
     attendanceId: number,
     status: "present" | "absent"
   ): Promise<void> => {
-    await api.put(`/attendance/${attendanceId}`, { status });
+    await apiClient.put(`/attendance/${attendanceId}`, { status });
   },
 
   deleteAttendance: async (attendanceId: number): Promise<void> => {
-    await api.delete(`/attendance/${attendanceId}`);
+    await apiClient.delete(`/attendance/${attendanceId}`);
   },
 };
